@@ -1,0 +1,207 @@
+---
+/**
+ * Static, server-rendered SVG line chart — zero client JS, themed with the
+ * site's own CSS custom properties so it reacts to the dark/light toggle
+ * instantly (unlike a rasterized image, and unlike the memory-calculator
+ * widget's uPlot chart, which bakes in colors once at mount and doesn't
+ * repaint on a later toggle). Used for illustrative benchmark charts on
+ * pages that otherwise ship no JS at all (SPEC §10).
+ */
+interface Series {
+  name: string;
+  color: 'baseline' | 'accent' | 'accent-muted';
+  data: { x: number; y: number }[];
+}
+
+interface Props {
+  series: Series[];
+  xLabel: string;
+  yLabel: string;
+  xTickFormat?: (v: number) => string;
+  yTickFormat?: (v: number) => string;
+  width?: number;
+  height?: number;
+  caption?: string;
+  /** Break out of the text column into the sidenote gutter, like
+   * <Figure width="wide"> (SPEC §5) — useful for dense multi-series data. */
+  wide?: boolean;
+}
+
+const {
+  series,
+  xLabel,
+  yLabel,
+  xTickFormat = (v: number) => String(v),
+  yTickFormat = (v: number) => String(v),
+  width = 720,
+  height = 340,
+  caption,
+  wide = false,
+} = Astro.props;
+
+// accent-muted reuses the exact accent color at reduced opacity rather than
+// a color-mix blend — blending accent into ink-muted landed visually
+// between the other two lines and was hard to tell apart from either at a
+// glance; opacity keeps it clearly "the same family, quieter" instead.
+const COLOR_VAR: Record<Series['color'], string> = {
+  baseline: 'var(--ink-muted)',
+  accent: 'var(--accent)',
+  'accent-muted': 'var(--accent)',
+};
+const OPACITY: Record<Series['color'], number> = {
+  baseline: 1,
+  accent: 1,
+  'accent-muted': 0.45,
+};
+
+const margin = { top: 12, right: 16, bottom: 44, left: 56 };
+const innerW = width - margin.left - margin.right;
+const innerH = height - margin.top - margin.bottom;
+
+const allPoints = series.flatMap((s) => s.data);
+const xMin = Math.min(...allPoints.map((p) => p.x));
+const xMax = Math.max(...allPoints.map((p) => p.x));
+const yMin = 0;
+const yMax = Math.max(...allPoints.map((p) => p.y)) * 1.05;
+
+const sx = (x: number) => margin.left + ((x - xMin) / (xMax - xMin)) * innerW;
+const sy = (y: number) => margin.top + innerH - ((y - yMin) / (yMax - yMin)) * innerH;
+
+const pathFor = (data: { x: number; y: number }[]) =>
+  data.map((p, i) => `${i === 0 ? 'M' : 'L'}${sx(p.x).toFixed(1)},${sy(p.y).toFixed(1)}`).join(' ');
+
+const xTicks = 6;
+const yTicks = 5;
+const xTickVals = Array.from({ length: xTicks }, (_, i) => xMin + ((xMax - xMin) * i) / (xTicks - 1));
+const yTickVals = Array.from({ length: yTicks }, (_, i) => yMin + ((yMax - yMin) * i) / (yTicks - 1));
+---
+
+<figure class={`chart-figure not-prose figure ${wide ? 'figure-wide' : 'figure-column'}`}>
+  <svg viewBox={`0 0 ${width} ${height}`} class="w-full" role="img" aria-label={caption ?? `${yLabel} vs ${xLabel}`}>
+    <!-- gridlines -->
+    {
+      yTickVals.map((v) => (
+        <line
+          x1={margin.left}
+          x2={width - margin.right}
+          y1={sy(v)}
+          y2={sy(v)}
+          stroke="var(--rule)"
+          stroke-width="1"
+        />
+      ))
+    }
+
+    <!-- axes -->
+    <line
+      x1={margin.left}
+      x2={width - margin.right}
+      y1={margin.top + innerH}
+      y2={margin.top + innerH}
+      stroke="var(--ink-muted)"
+      stroke-width="1"
+    />
+    <line x1={margin.left} x2={margin.left} y1={margin.top} y2={margin.top + innerH} stroke="var(--ink-muted)" stroke-width="1" />
+
+    <!-- y ticks -->
+    {
+      yTickVals.map((v) => (
+        <text x={margin.left - 8} y={sy(v)} text-anchor="end" dominant-baseline="middle" class="chart-tick">
+          {yTickFormat(v)}
+        </text>
+      ))
+    }
+
+    <!-- x ticks -->
+    {
+      xTickVals.map((v) => (
+        <text x={sx(v)} y={margin.top + innerH + 18} text-anchor="middle" class="chart-tick">
+          {xTickFormat(v)}
+        </text>
+      ))
+    }
+
+    <!-- axis labels -->
+    <text x={margin.left + innerW / 2} y={height - 6} text-anchor="middle" class="chart-axis-label">
+      {xLabel}
+    </text>
+    <text
+      x={-(margin.top + innerH / 2)}
+      y={14}
+      text-anchor="middle"
+      transform="rotate(-90)"
+      class="chart-axis-label"
+    >
+      {yLabel}
+    </text>
+
+    <!-- series -->
+    {
+      series.map((s) => (
+        <path
+          d={pathFor(s.data)}
+          fill="none"
+          stroke={COLOR_VAR[s.color]}
+          stroke-opacity={OPACITY[s.color]}
+          stroke-width="2"
+          stroke-linejoin="round"
+          stroke-linecap="round"
+        />
+      ))
+    }
+  </svg>
+
+  <div class="chart-legend">
+    {
+      series.map((s) => (
+        <span class="chart-legend-item">
+          <span class="chart-legend-swatch" style={`background:${COLOR_VAR[s.color]};opacity:${OPACITY[s.color]}`} />
+          {s.name}
+        </span>
+      ))
+    }
+  </div>
+
+  {caption && <figcaption>{caption}</figcaption>}
+</figure>
+
+<style>
+  .chart-figure {
+    border: 1px solid var(--rule);
+    padding: 1.25rem 1.25rem 1rem;
+  }
+  .chart-tick {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    fill: var(--ink-muted);
+  }
+  .chart-axis-label {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.04em;
+    fill: var(--ink-muted);
+    text-transform: uppercase;
+  }
+  .chart-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 0.75rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--rule);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--ink-muted);
+  }
+  .chart-legend-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .chart-legend-swatch {
+    display: inline-block;
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+  }
+</style>

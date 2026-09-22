@@ -1,0 +1,65 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+  canonicalUrl?: string;
+  ogImage?: string;
+}
+
+const { title, description, canonicalUrl, ogImage = '/og-default.png' } = Astro.props;
+const ogImageUrl = new URL(ogImage, Astro.site ?? Astro.url).href;
+const pageUrl = new URL(Astro.url.pathname, Astro.site ?? Astro.url).href;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="alternate" type="application/rss+xml" title="Ryan Pégoud" href="/rss.xml" />
+    <title>{title}</title>
+    {description && <meta name="description" content={description} />}
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+
+    <meta property="og:type" content="website" />
+    <meta property="og:title" content={title} />
+    {description && <meta property="og:description" content={description} />}
+    <meta property="og:url" content={pageUrl} />
+    <meta property="og:image" content={ogImageUrl} />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:image" content={ogImageUrl} />
+
+    <script is:inline>
+      // Applies a manually-chosen theme before first paint to avoid a flash
+      // of the wrong theme. Falls back silently to prefers-color-scheme
+      // (handled in CSS) when nothing has been chosen yet.
+      try {
+        const stored = localStorage.getItem('theme');
+        if (stored === 'light' || stored === 'dark') {
+          document.documentElement.setAttribute('data-theme', stored);
+        }
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <slot />
+    <script is:inline>
+      // Animations autoplay by default, but SPEC §8 asks that
+      // prefers-reduced-motion visitors get the poster/first frame with a
+      // manual play control instead — so undo the autoplay for them here.
+      if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+        document.querySelectorAll('video[autoplay]').forEach((v) => {
+          v.removeAttribute('autoplay');
+          v.pause();
+        });
+      }
+    </script>
+  </body>
+</html>

@@ -1,0 +1,138 @@
+---
+import BaseLayout from './BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+
+interface Heading {
+  depth: number;
+  slug: string;
+  text: string;
+}
+
+interface Props {
+  title: string;
+  claim: string;
+  date: Date;
+  updated?: Date;
+  readingTimeLabel: string;
+  canonicalUrl?: string;
+  headings: Heading[];
+  ogImage?: string;
+}
+
+const { title, claim, date, updated, readingTimeLabel, canonicalUrl, headings, ogImage } = Astro.props;
+
+// SPEC §5: sticky-free TOC — depth 1-3 keeps it to a useful outline without
+// drowning in every minor subsection.
+const tocHeadings = headings.filter((h) => h.depth <= 3);
+
+const dateLabel = date.toLocaleDateString('en-US', {
+  year: 'numeric',
+  month: 'short',
+  day: 'numeric',
+});
+const updatedLabel = updated
+  ? updated.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' })
+  : null;
+---
+
+<BaseLayout title={`${title} — Ryan Pégoud`} description={claim} canonicalUrl={canonicalUrl} ogImage={ogImage}>
+  <SiteHeader />
+  <main class="article-grid mx-auto px-6 py-12">
+    {
+      tocHeadings.length > 0 && (
+        <aside class="toc-col hidden lg:block">
+          <nav aria-label="Table of contents">
+            <p class="toc-heading">Contents</p>
+            <ol>
+              {tocHeadings.map((h) => (
+                <li class={`toc-depth-${h.depth}`}>
+                  <a href={`#${h.slug}`} data-toc-link>
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
+        </aside>
+      )
+    }
+    <div class="content-col">
+      <header class="mb-10">
+        <h1 class="font-display text-3xl leading-tight font-medium text-ink sm:text-4xl">
+          {title}
+        </h1>
+        <p class="mt-3 font-display text-lg text-ink-muted">{claim}</p>
+        <p class="mt-4 font-mono text-xs tracking-wide text-ink-muted uppercase">
+          {dateLabel} · {readingTimeLabel}
+          {updatedLabel && <> · updated {updatedLabel}</>}
+        </p>
+      </header>
+      {
+        tocHeadings.length > 0 && (
+          <details class="toc-mobile lg:hidden">
+            <summary>Contents</summary>
+            <ol>
+              {tocHeadings.map((h) => (
+                <li class={`toc-depth-${h.depth}`}>
+                  <a href={`#${h.slug}`} data-toc-link>
+                    {h.text}
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </details>
+        )
+      }
+      <article
+        class="prose prose-neutral max-w-none
+        prose-headings:font-display prose-headings:font-medium prose-headings:text-ink prose-headings:scroll-mt-6
+        prose-p:font-body prose-p:text-[1.15rem] prose-p:leading-[1.7] prose-p:text-ink
+        prose-li:font-body prose-li:text-[1.15rem] prose-li:leading-[1.7] prose-li:text-ink
+        prose-a:text-accent prose-a:underline prose-a:decoration-accent/40 hover:prose-a:decoration-accent
+        prose-strong:text-ink
+        prose-blockquote:border-accent prose-blockquote:font-display prose-blockquote:text-ink-muted prose-blockquote:not-italic
+        prose-code:font-mono prose-code:text-ink prose-code:before:content-none prose-code:after:content-none
+        prose-pre:bg-surface prose-pre:border prose-pre:border-rule
+        prose-img:rounded-none prose-img:border prose-img:border-rule
+        prose-hr:border-rule
+        prose-em:text-ink-muted"
+      >
+        <slot />
+      </article>
+    </div>
+    <div class="side-col hidden lg:block" aria-hidden="true" />
+  </main>
+  <script is:inline>
+    // Scroll-spy for the TOC — highlights the current section. Vanilla,
+    // ~20 lines, no framework: the same minimal-JS exception as the theme
+    // toggle (SPEC §10's "zero JS on non-widget pages" is about shipping no
+    // framework bundles, not a literal zero bytes of script anywhere).
+    (function () {
+      const links = document.querySelectorAll('[data-toc-link]');
+      if (!links.length) return;
+      const targets = new Map();
+      links.forEach((link) => {
+        const id = link.getAttribute('href')?.slice(1);
+        const el = id && document.getElementById(id);
+        if (el) targets.set(el, link.getAttribute('href'));
+      });
+      const setActive = (href) => {
+        document.querySelectorAll('[data-toc-link]').forEach((l) => {
+          l.toggleAttribute('data-active', l.getAttribute('href') === href);
+        });
+      };
+      const observer = new IntersectionObserver(
+        (entries) => {
+          for (const entry of entries) {
+            if (entry.isIntersecting) {
+              const href = targets.get(entry.target);
+              if (href) setActive(href);
+            }
+          }
+        },
+        { rootMargin: '-10% 0px -70% 0px' },
+      );
+      targets.forEach((_, el) => observer.observe(el));
+    })();
+  </script>
+</BaseLayout>

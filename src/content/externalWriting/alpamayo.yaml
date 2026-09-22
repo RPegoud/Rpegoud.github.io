@@ -1,0 +1,6 @@
+title: "AlpamayoR1: Large Causal Reasoning Models for Autonomous Driving"
+claim: "AlpamayoR1 pairs a vision-language model with an explicit chain-of-causation reasoning trace, grounding autonomous-driving decisions in causal explanations rather than a black-box policy."
+date: 2026-02-19
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/alpamayor1-large-causal-reasoning-models-for-autonomous-driving/"
+theme: autonomous-driving

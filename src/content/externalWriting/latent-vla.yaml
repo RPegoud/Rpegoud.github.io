@@ -1,0 +1,6 @@
+title: "LatentVLA: Latent Reasoning Models for Autonomous Driving"
+claim: "LatentVLA is a convincing take against language-based approaches that requires no natural language dataset, performs reasoning in the latent space and uses knowledge distillation to meet real-time constraints"
+date: 2026-05-03
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/latentvla-latent-reasoning-models-for-autonomous-driving/"
+theme: autonomous-driving

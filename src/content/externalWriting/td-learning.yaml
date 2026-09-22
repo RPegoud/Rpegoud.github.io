@@ -1,0 +1,6 @@
+title: "Temporal-Difference Learning and the Importance of Exploration: An Illustrated Guide"
+claim: "Comparing Q-learning, Dyna-Q, and Dyna-Q+ on a custom Grid World isolates how much of each method's performance comes from planning with a learned model versus how it explores."
+date: 2023-09-23
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/temporal-difference-learning-and-the-importance-of-exploration-an-illustrated-guide/"
+theme: rl

@@ -1,0 +1,6 @@
+title: "Breaking Down State-of-the-Art PPO Implementations in JAX"
+claim: "Breaks down the JAX-specific implementation tricks behind PureJaxRL's PPO — one of the fastest published PPO implementations — rather than PPO's underlying theory."
+date: 2024-05-01
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/breaking-down-state-of-the-art-ppo-implementations-in-jax-6f102c06c149/"
+theme: rl

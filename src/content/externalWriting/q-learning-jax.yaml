@@ -1,0 +1,6 @@
+title: "Vectorize and Parallelize RL Environments with JAX: Q-learning at the Speed of Light"
+claim: "Vectorizing RL environments in JAX makes parallelizing Q-learning training across dozens of simultaneous agents nearly as simple as training one."
+date: 2023-10-15
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/vectorize-and-parallelize-rl-environments-with-jax-q-learning-at-the-speed-of-light-49d07373adf5/"
+theme: rl

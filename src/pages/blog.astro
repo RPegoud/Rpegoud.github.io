@@ -1,0 +1,135 @@
+---
+import { getCollection } from 'astro:content';
+import BaseLayout from '../layouts/BaseLayout.astro';
+import SiteHeader from '../components/SiteHeader.astro';
+import MemoryCalculator from '../components/widgets/MemoryCalculator';
+
+const articles = await getCollection('articles', ({ data }) => !data.draft);
+const flagship = articles.find((a) => a.id === 'fused-linearce')!;
+const featured = articles
+  .filter((a) => a.data.featured && a.id !== flagship.id)
+  .sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+
+const externalWriting = await getCollection('externalWriting');
+
+const THEME_LABELS: Record<string, string> = {
+  'inference-efficiency': 'Inference Efficiency',
+  compression: 'Compression',
+  rl: 'Reinforcement Learning',
+  systems: 'Systems',
+  kernels: 'Kernels',
+  'autonomous-driving': 'Autonomous Driving',
+  llms: 'LLMs',
+};
+
+const byTheme = new Map<string, typeof externalWriting>();
+for (const entry of externalWriting) {
+  const list = byTheme.get(entry.data.theme) ?? [];
+  list.push(entry);
+  byTheme.set(entry.data.theme, list);
+}
+for (const list of byTheme.values()) {
+  list.sort((a, b) => b.data.date.valueOf() - a.data.date.valueOf());
+}
+// Stable theme order rather than Map insertion order (which follows first-seen).
+const themeOrder = [
+  'rl',
+  'inference-efficiency',
+  'compression',
+  'kernels',
+  'systems',
+  'llms',
+  'autonomous-driving',
+].filter((t) =>
+  byTheme.has(t),
+);
+
+function provenance(data: { venue?: string; accolade?: string; date: Date }) {
+  const parts = [data.venue, data.accolade].filter(Boolean);
+  parts.push(
+    data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' }),
+  );
+  return parts.join(' · ');
+}
+---
+
+<BaseLayout
+  title="Blog — Ryan Pégoud"
+  description="Writing on inference efficiency, compression, and GPU kernels."
+  ogImage="/og-blog.png"
+>
+  <SiteHeader />
+  <main class="mx-auto max-w-5xl px-6 py-16">
+    <!-- Flagship — full width -->
+    <section>
+      <a href={`/articles/${flagship.id}`} class="group block no-underline">
+        <p class="font-mono text-xs tracking-wide text-ink-muted uppercase">Flagship</p>
+        <h1 class="mt-2 font-display text-3xl font-medium text-ink group-hover:text-accent sm:text-4xl">
+          {flagship.data.title}
+        </h1>
+        <p class="mt-3 max-w-2xl font-body text-lg text-ink-muted">{flagship.data.claim}</p>
+        <p class="mt-3 font-mono text-xs text-ink-muted uppercase">{provenance(flagship.data)}</p>
+      </a>
+      <div class="mt-6">
+        <MemoryCalculator client:visible variant="compact" />
+      </div>
+    </section>
+
+    <!-- Featured grid -->
+    <section class="mt-16 grid grid-cols-1 gap-8 border-t border-rule pt-10 sm:grid-cols-3">
+      {
+        featured.map((entry) => (
+          <a href={`/articles/${entry.id}`} class="group block no-underline">
+            <h2 class="font-display text-xl font-medium text-ink group-hover:text-accent">
+              {entry.data.title}
+            </h2>
+            <p class="mt-2 font-body text-ink-muted">{entry.data.claim}</p>
+            <p class="mt-3 font-mono text-xs text-ink-muted uppercase">{provenance(entry.data)}</p>
+          </a>
+        ))
+      }
+    </section>
+
+    <!-- Writing elsewhere -->
+    {
+      externalWriting.length > 0 && (
+        <section class="mt-16 border-t border-rule pt-10">
+          <p class="font-mono text-xs tracking-wide text-ink-muted uppercase">Other articles</p>
+          <div class="mt-6 space-y-8">
+            {themeOrder.map((theme) => (
+              <div>
+                <p class="font-mono text-xs text-ink-muted uppercase">{THEME_LABELS[theme] ?? theme}</p>
+                <div class="mt-3 overflow-x-auto">
+                  <table class="w-full border-collapse text-left">
+                    <tbody>
+                      {byTheme.get(theme)!.map((entry) => (
+                        <tr class="border-t border-rule">
+                          <td class="py-2.5 pr-4 font-body text-ink">
+                            <a
+                              href={entry.data.url}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              class="text-ink no-underline hover:text-accent"
+                            >
+                              {entry.data.title}
+                            </a>
+                          </td>
+                          <td class="py-2.5 pr-4 whitespace-nowrap font-mono text-xs text-ink-muted">
+                            {entry.data.venue}
+                          </td>
+                          <td class="py-2.5 whitespace-nowrap font-mono text-xs text-ink-muted">
+                            {entry.data.date.toLocaleDateString('en-US', { year: 'numeric', month: 'short' })}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+      )
+    }
+  </main>
+</BaseLayout>

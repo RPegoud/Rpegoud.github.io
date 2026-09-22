@@ -1,0 +1,6 @@
+title: "Implementing a Transformer Encoder from Scratch with JAX and Haiku"
+claim: "Builds the Transformer encoder block by block in JAX and Haiku — embeddings and positional encoding, multi-head attention, residual connections, and position-wise feed-forward layers — rather than starting from a library implementation."
+date: 2023-11-07
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/implementing-a-transformer-encoder-from-scratch-with-jax-and-haiku-791d31b4f0dd/"
+theme: llms

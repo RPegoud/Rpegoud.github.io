@@ -1,0 +1,6 @@
+title: "A Gentle Introduction to Deep Reinforcement Learning in JAX"
+claim: "A Deep Q-Network and replay buffer implemented from scratch in JAX solve OpenAI's CartPole environment in under a second."
+date: 2023-11-21
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/a-gentle-introduction-to-deep-reinforcement-learning-in-jax-c1e45a179b92/"
+theme: rl

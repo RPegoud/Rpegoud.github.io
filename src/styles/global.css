@@ -1,0 +1,350 @@
+@import 'tailwindcss';
+@plugin '@tailwindcss/typography';
+
+/* Self-hosted KaTeX CSS + fonts (SPEC §6: do not hotlink the CDN). Vite
+   resolves the font url()s inside this file and copies them into the
+   build output automatically. */
+@import 'katex/dist/katex.min.css';
+
+@import '@fontsource-variable/newsreader/wght.css';
+@import '@fontsource-variable/newsreader/wght-italic.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+/*
+  Design tokens — see SPEC.md §9.
+  "Precise, quiet, instrument-like." Cool paper, not cream. Blue-black ink,
+  not pure black. One accent, spent sparingly — a burnt-orange/rust rather
+  than the spec's original muted teal, per explicit direction overriding
+  that brief's "no vermilion accent" constraint. Newsreader serves both
+  display and body so the page speaks in one typographic voice; IBM Plex
+  Mono is reserved for data, units, kernel names, and table figures.
+
+  Light tokens live on bare :root. The dark palette is defined twice on
+  purpose: once under prefers-color-scheme for users who haven't chosen,
+  guarded so a manual light choice always wins, and again under
+  [data-theme="dark"] so the manual toggle wins in both directions.
+*/
+:root {
+  --bg: #ffffff;
+  --surface: #e3e6e0;
+  --ink: #161b22;
+  --ink-muted: #5b6660;
+  --rule: #c9cdc5;
+  --accent: #c2410c;
+  --accent-ink: #fdf4f0;
+
+  --font-display: 'Newsreader Variable', 'Newsreader', ui-serif, Georgia, serif;
+  --font-body: 'Newsreader Variable', 'Newsreader', ui-serif, Georgia, serif;
+  --font-mono: 'IBM Plex Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+  /* Article grid (SPEC §5): a symmetric TOC / measure / sidenote layout so
+     the ~68ch measure column stays visually centered even though the TOC
+     and sidenote gutters serve very different content. */
+  --toc-w: 13rem;
+  --side-w: 13rem;
+  --gutter: 3rem;
+  --measure: 68ch;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #14171a;
+    --surface: #1c2023;
+    --ink: #e7e9e5;
+    --ink-muted: #93998f;
+    --rule: #34393c;
+    --accent: #fb923c;
+    --accent-ink: #2a1204;
+  }
+
+  /* KaTeX inherits color from surrounding text by default, which lands on
+     --ink (off-white). Requested explicitly white math in dark mode. */
+  :root:not([data-theme='light']) .katex {
+    color: #ffffff;
+  }
+
+  /* Astro's dual Shiki theme (shikiConfig.themes.{light,dark}) emits a
+     --shiki-dark custom property per token but leaves it to the page to
+     decide *when* to switch to it — it does not do this automatically.
+     Wire it to the same toggle everything else uses (SPEC §10: "KaTeX and
+     Shiki must both be themed correctly in each [mode]"). */
+  :root:not([data-theme='light']) .astro-code,
+  :root:not([data-theme='light']) .astro-code span {
+    color: var(--shiki-dark) !important;
+    background-color: var(--shiki-dark-bg) !important;
+    font-style: var(--shiki-dark-font-style) !important;
+    font-weight: var(--shiki-dark-font-weight) !important;
+    text-decoration: var(--shiki-dark-text-decoration) !important;
+  }
+}
+
+:root[data-theme='dark'] {
+  --bg: #14171a;
+  --surface: #1c2023;
+  --ink: #e7e9e5;
+  --ink-muted: #93998f;
+  --rule: #34393c;
+  --accent: #fb923c;
+  --accent-ink: #2a1204;
+}
+
+:root[data-theme='dark'] .astro-code,
+:root[data-theme='dark'] .astro-code span {
+  color: var(--shiki-dark) !important;
+  background-color: var(--shiki-dark-bg) !important;
+  font-style: var(--shiki-dark-font-style) !important;
+  font-weight: var(--shiki-dark-font-weight) !important;
+  text-decoration: var(--shiki-dark-text-decoration) !important;
+}
+
+:root[data-theme='dark'] .katex {
+  color: #ffffff;
+}
+
+/* Wide block equations (long align blocks, matrices) are wider than the
+   360px minimum viewport (SPEC §10). KaTeX's own CSS has no overflow rule
+   for .katex-display, so without this the whole page scrolls horizontally
+   instead of just the equation.
+
+   Tall constructs (cases/piecewise definitions, stacked fractions) can
+   render slightly taller than KaTeX's own computed layout box — harmless
+   when overflow is visible (the default), but overflow-y: hidden above
+   then clips their top/bottom. The padding gives them enough headroom that
+   the clip boundary never actually touches the glyphs. */
+.katex-display {
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding-block: 0.5em;
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-ink: var(--ink);
+  --color-ink-muted: var(--ink-muted);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-accent-ink: var(--accent-ink);
+
+  --font-display: var(--font-display);
+  --font-body: var(--font-body);
+  --font-mono: var(--font-mono);
+}
+
+html {
+  color-scheme: light dark;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: var(--font-body);
+}
+
+::selection {
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+
+/* Visible keyboard focus throughout (SPEC §10). */
+:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Article grid (SPEC §5) — TOC in the left margin, ~68ch content column,
+   a reserved right gutter for sidenotes to float into. Single column
+   below lg; the desktop nav and mobile <details> disclosure are two
+   separate elements toggled by display, not one repositioned via CSS.
+   ------------------------------------------------------------------- */
+.article-grid {
+  display: grid;
+  grid-template-columns: minmax(0, var(--measure));
+  justify-content: center;
+}
+
+@media (min-width: 1024px) {
+  .article-grid {
+    grid-template-columns: var(--toc-w) minmax(0, var(--measure)) var(--side-w);
+    column-gap: var(--gutter);
+    align-items: start;
+  }
+}
+
+.toc-col {
+  grid-column: 1;
+}
+
+.content-col {
+  grid-column: 1;
+  min-width: 0;
+}
+
+@media (min-width: 1024px) {
+  .content-col {
+    grid-column: 2;
+  }
+}
+
+.side-col {
+  grid-column: 3;
+}
+
+/* ---------------------------------------------------------------------
+   Table of contents
+   ------------------------------------------------------------------- */
+.toc-heading,
+.toc-mobile summary {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+
+.toc-col ol,
+.toc-mobile ol {
+  list-style: none;
+  margin: 0.75rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+}
+
+.toc-col a,
+.toc-mobile a {
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.4;
+  color: var(--ink-muted);
+  text-decoration: none;
+  transition: color 0.15s ease;
+}
+
+.toc-col a:hover,
+.toc-mobile a:hover {
+  color: var(--ink);
+}
+
+.toc-col a[data-active],
+.toc-mobile a[data-active] {
+  color: var(--accent);
+}
+
+.toc-depth-2 {
+  padding-left: 0.85rem;
+}
+
+.toc-depth-3 {
+  padding-left: 1.7rem;
+}
+
+.toc-mobile {
+  margin-bottom: 2.5rem;
+  border: 1px solid var(--rule);
+  padding: 0.85rem 1rem;
+}
+
+.toc-mobile summary {
+  cursor: pointer;
+}
+
+/* ---------------------------------------------------------------------
+   Figures (SPEC §5: <Figure width="column|wide|full">)
+   ------------------------------------------------------------------- */
+.figure {
+  margin-block: 2.5rem;
+}
+
+.figure img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.figure figcaption {
+  margin-top: 0.6rem;
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+}
+
+@media (min-width: 1024px) {
+  .figure-wide {
+    width: calc(100% + var(--side-w) + var(--gutter));
+    max-width: calc(var(--measure) + var(--side-w) + var(--gutter));
+  }
+
+  .figure-full {
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+  }
+
+  .figure-full img {
+    border-left: none;
+    border-right: none;
+  }
+}
+
+/* ---------------------------------------------------------------------
+   Sidenotes (SPEC §5, Tufte CSS-style) — authored as plain markdown
+   footnotes ([^1] ... [^1]: note text), relocated inline by
+   remark-sidenotes.mjs. Float into the right gutter on wide viewports;
+   flow inline right after the paragraph on narrow ones.
+   ------------------------------------------------------------------- */
+.sidenote-marker {
+  font-family: var(--font-mono);
+  font-size: 0.7em;
+  color: var(--accent);
+  vertical-align: super;
+  line-height: 0;
+}
+
+.sidenote-number {
+  font-family: var(--font-mono);
+  color: var(--accent);
+  margin-right: 0.3em;
+}
+
+.sidenote-content {
+  display: block;
+  font-family: var(--font-mono);
+  font-size: 0.8rem;
+  line-height: 1.55;
+  color: var(--ink-muted);
+  margin-block: 0.6rem;
+  padding-left: 0.85rem;
+  border-left: 2px solid var(--rule);
+}
+
+@media (min-width: 1024px) {
+  .sidenote-content {
+    float: right;
+    clear: right;
+    width: var(--side-w);
+    margin-right: calc(-1 * (var(--side-w) + var(--gutter)));
+    margin-top: 0.15em;
+    margin-bottom: 0;
+    padding-left: 0;
+    padding-top: 0.4em;
+    border-left: none;
+    border-top: 2px solid var(--rule);
+  }
+}

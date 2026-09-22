@@ -1,0 +1,32 @@
+---
+import ThemeToggle from './ThemeToggle.astro';
+
+const path = Astro.url.pathname;
+const isActive = (href: string) =>
+  href === '/'
+    ? path === '/'
+    : path.startsWith(href) || (href === '/blog' && path.startsWith('/articles/'));
+---
+
+<header class="sticky top-0 z-50 border-b border-rule bg-bg">
+  <div class="mx-auto flex max-w-5xl items-center justify-between px-6 py-4">
+    <a href="/" class="font-mono text-sm tracking-tight text-ink no-underline">
+      Ryan Pégoud
+    </a>
+    <nav class="flex items-center gap-4">
+      <a
+        href="/"
+        class={`font-mono text-xs no-underline hover:text-ink ${isActive('/') ? 'text-accent' : 'text-ink-muted'}`}
+      >
+        About
+      </a>
+      <a
+        href="/blog"
+        class={`font-mono text-xs no-underline hover:text-ink ${isActive('/blog') ? 'text-accent' : 'text-ink-muted'}`}
+      >
+        Blog
+      </a>
+      <ThemeToggle />
+    </nav>
+  </div>
+</header>

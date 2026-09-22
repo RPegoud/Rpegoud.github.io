@@ -1,0 +1,38 @@
+---
+// Plain markup + a tiny inline script — no framework, no hydration. This is
+// the one bit of JS that ships on every page (SPEC §10 "zero JS on non-widget
+// pages" is about shipping no framework/component bundles; a few lines of
+// vanilla script to flip a data-attribute and read prefers-color-scheme is
+// the standard, minimal exception every static site with a manual dark-mode
+// toggle needs).
+---
+
+<button
+  id="theme-toggle"
+  type="button"
+  aria-label="Toggle dark mode"
+  class="rounded border border-rule px-2 py-1 font-mono text-xs text-ink-muted transition-colors hover:text-ink"
+>
+  <span aria-hidden="true" data-theme-icon>◐</span>
+</button>
+
+<script is:inline>
+  (function () {
+    const btn = document.getElementById('theme-toggle');
+    if (!btn) return;
+
+    function currentTheme() {
+      const attr = document.documentElement.getAttribute('data-theme');
+      if (attr === 'light' || attr === 'dark') return attr;
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
+
+    btn.addEventListener('click', function () {
+      const next = currentTheme() === 'dark' ? 'light' : 'dark';
+      document.documentElement.setAttribute('data-theme', next);
+      try {
+        localStorage.setItem('theme', next);
+      } catch {}
+    });
+  })();
+</script>

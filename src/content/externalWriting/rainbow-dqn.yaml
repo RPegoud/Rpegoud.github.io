@@ -1,0 +1,6 @@
+title: "Rainbow: The Colorful Evolution of Deep Q-Networks"
+claim: "Breaking down Rainbow's six independently-published DQN extensions in a shared JAX (Stoix) implementation shows how double Q-learning, prioritized replay, dueling networks, multi-step returns, distributional RL, and noisy nets compose into one architecture."
+date: 2024-07-12
+venue: "Towards Data Science"
+url: "https://towardsdatascience.com/rainbow-the-colorful-evolution-of-deep-q-networks-37e662ab99b2/"
+theme: rl

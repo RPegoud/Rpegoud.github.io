@@ -1,0 +1,28 @@
+---
+import { Image } from 'astro:assets';
+import type { ImageMetadata } from 'astro';
+
+interface Props {
+  name: string;
+  description: string;
+  meta: string;
+  url: string;
+  icon?: ImageMetadata;
+}
+
+const { name, description, meta, url, icon } = Astro.props;
+---
+
+<a
+  href={url}
+  target="_blank"
+  rel="noopener noreferrer"
+  class="group block border border-rule p-5 no-underline transition-colors hover:border-accent"
+>
+  <div class="flex items-center gap-3">
+    {icon && <Image src={icon} alt="" width={36} height={36} class="rounded-lg" />}
+    <h3 class="font-display text-lg font-medium text-ink group-hover:text-accent">{name}</h3>
+  </div>
+  <p class="mt-3 font-body text-sm leading-relaxed text-ink-muted">{description}</p>
+  <p class="mt-3 font-mono text-xs text-ink-muted uppercase">{meta}</p>
+</a>

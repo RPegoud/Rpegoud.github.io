@@ -26,6 +26,12 @@ const isActive = (href: string) =>
       >
         Blog
       </a>
+      <a
+        href="/projects"
+        class={`font-mono text-xs no-underline hover:text-ink ${isActive('/projects') ? 'text-accent' : 'text-ink-muted'}`}
+      >
+        Projects
+      </a>
       <ThemeToggle />
     </nav>
   </div>

@@ -1,43 +1,43 @@
 ---
-import BaseLayout from '../layouts/BaseLayout.astro';
-import SiteHeader from '../components/SiteHeader.astro';
-import ProjectCard from '../components/ProjectCard.astro';
-import type { ImageMetadata } from 'astro';
-import kompassIcon from '../assets/projects/kompass.png';
+import BaseLayout from "../layouts/BaseLayout.astro";
+import SiteHeader from "../components/SiteHeader.astro";
+import ProjectCard from "../components/ProjectCard.astro";
 
 interface Project {
   name: string;
   description: string;
   meta: string;
   url: string;
-  icon?: ImageMetadata;
 }
 
-const personalProjects: Project[] = [
-  {
-    name: 'Kompass',
-    description:
-      'A tooling suite for GPU kernel development — test, benchmark, and profile CUDA, Triton, and PyTorch implementations of the same operation side by side, gated on correctness and benchmarked against an achievable bandwidth roofline.',
-    meta: 'Python · CUDA · Triton',
-    url: 'https://github.com/RPegoud/kompass',
-    // icon: kompassIcon,
-  },
-];
+const kompass = {
+  name: "Kompass",
+  url: "https://github.com/RPegoud/kompass",
+  description:
+    "A tooling suite for GPU kernel development: one harness to test, benchmark, tune, and profile CUDA, Triton, and PyTorch implementations of the same operation, locally or fanned out across many cloud GPUs via Modal.",
+  bullets: [
+    "Benchmarks CUDA, Triton, and PyTorch implementations of the same operation side by side, gated on correctness, so a wrong kernel is never timed.",
+    "Tunes each kernel's launch parameters per GPU and problem shape, then compares tuned vs. default configs.",
+    "Fans out across GPUs on Modal: tuned 23k matmul configs in about 7 minutes on 10 H100s.",
+    "Reports throughput, roofline, and tuning gain as plots, judged against each GPU's vendor-peak and measured memory bandwidth.",
+  ],
+  meta: "Python · CUDA · Triton",
+};
 
 const openSourceProjects: Project[] = [
   {
-    name: 'Stoix',
+    name: "Stoix",
     description:
-      'A research-friendly codebase for fast, end-to-end single-agent reinforcement learning in JAX. Contributed a Rainbow DQN implementation (Hessel et al., 2017).',
-    meta: 'Python · JAX · 425★',
-    url: 'https://github.com/EdanToledo/Stoix',
+      "A research-friendly codebase for fast, end-to-end single-agent reinforcement learning in JAX. Contributed a Rainbow DQN implementation (Hessel et al., 2017).",
+    meta: "Python · JAX · 425★",
+    url: "https://github.com/EdanToledo/Stoix",
   },
   {
-    name: 'Syllabus',
+    name: "Syllabus",
     description:
-      'Synchronized curriculum learning for RL agents — portable curricula that plug into existing training loops. Contributed multi-agent learning curricula in PyTorch for the RLC 2025 paper.',
-    meta: 'Python · 124★',
-    url: 'https://github.com/RyanNavillus/Syllabus',
+      "Synchronized curriculum learning for RL agents — portable curricula that plug into existing training loops. Contributed multi-agent learning curricula in PyTorch for the RLC 2025 paper.",
+    meta: "Python · 124★",
+    url: "https://github.com/RyanNavillus/Syllabus",
   },
 ];
 ---
@@ -47,22 +47,53 @@ const openSourceProjects: Project[] = [
   description="Personal projects and open-source contributions in GPU kernels and reinforcement learning."
 >
   <SiteHeader />
-  <main class="mx-auto max-w-2xl px-6 py-16">
-    <header>
-      <h1 class="font-display text-3xl font-medium text-ink">Projects</h1>
-      <p class="mt-2 font-body text-ink-muted">
-        A selection of personal projects and open-source contributions.
+  <main class="mx-auto max-w-5xl px-6 py-16">
+    <!-- Headline — full width, like the blog's flagship -->
+    <section>
+      <a
+        href={kompass.url}
+        target="_blank"
+        rel="noopener noreferrer"
+        class="group block no-underline"
+      >
+        <p class="font-mono text-xs tracking-wide text-ink-muted uppercase">
+          Projects
+        </p>
+        <h1
+          class="mt-2 font-display text-3xl font-medium text-ink group-hover:text-accent sm:text-4xl"
+        >
+          {kompass.name}
+        </h1>
+        <p class="mt-3 max-w-2xl font-body text-lg text-ink-muted">
+          {kompass.description}
+        </p>
+      </a>
+      <ul class="mt-4 max-w-2xl space-y-2">
+        {
+          kompass.bullets.map((bullet) => (
+            <li class="flex gap-2 font-body text-sm leading-relaxed text-ink">
+              <span class="mt-[0.5em] h-1 w-1 shrink-0 rounded-full bg-accent" />
+              {bullet}
+            </li>
+          ))
+        }
+      </ul>
+      <video
+        src="/linkedin_wide.mp4"
+        autoplay
+        muted
+        loop
+        playsinline
+        preload="metadata"
+        controls
+        class="mt-6 w-full border border-rule"></video>
+      <p class="mt-3 font-mono text-xs text-ink-muted uppercase">
+        {kompass.meta}
       </p>
-    </header>
-
-    <section class="mt-12">
-      <h2 class="font-mono text-xs tracking-wide text-ink-muted uppercase">Personal Projects</h2>
-      <div class="mt-4 grid grid-cols-1 gap-4 sm:grid-cols-2">
-        {personalProjects.map((project) => <ProjectCard {...project} />)}
-      </div>
     </section>
 
-    <section class="mt-12">
+    <!-- Open Source Contributions -->
+    <section class="mt-16 border-t border-rule pt-10">
       <h2 class="font-mono text-xs tracking-wide text-ink-muted uppercase">
         Open Source Contributions
       </h2>
